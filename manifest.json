@@ -1,0 +1,26 @@
+{
+    "name":"有谱么自动翻谱插件",
+    "version":"1.0",
+    "manifest_version": 2,
+    "content_scripts":[
+        {
+            "matches":["https://yopu.co/*"],
+            "js":["chajian.js"]
+        }
+    ],  
+    "browser_action":{
+        "default_icon":"yz.png",
+        "default_popup":"index.html"
+    },
+    "icons":{
+        "16":"yz.png",
+        "32":"yz.png",
+        "128":"yz.png"
+    },
+    "background": {
+        "scripts": [
+          "jq/jquery-3.2.1.min.js","jq/jquery-3.2.1.js"
+        ],
+        "persistent": true
+    }
+}
