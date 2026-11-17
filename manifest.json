@@ -1,26 +1,26 @@
 {
-    "name":"有谱么自动翻谱插件",
-    "version":"1.0",
-    "manifest_version": 2,
-    "content_scripts":[
-        {
-            "matches":["https://yopu.co/*"],
-            "js":["chajian.js"]
-        }
-    ],  
-    "browser_action":{
-        "default_icon":"yz.png",
-        "default_popup":"index.html"
-    },
-    "icons":{
-        "16":"yz.png",
-        "32":"yz.png",
-        "128":"yz.png"
-    },
-    "background": {
-        "scripts": [
-          "jq/jquery-3.2.1.min.js","jq/jquery-3.2.1.js"
-        ],
-        "persistent": true
+  "manifest_version": 3,
+  "name": "有谱么自动翻谱（Auto Scroll）",
+  "version": "2.2.0",
+  "description": "在 yopu.co 曲谱页自动向下翻谱滚动，支持调速、暂停/继续，以整首用时为标尺。",
+  "permissions": ["storage", "scripting", "activeTab"],
+  "host_permissions": ["https://yopu.co/*", "https://www.yopu.co/*"],
+  "action": {
+    "default_icon": "yz.png",
+    "default_popup": "popup.html",
+    "default_title": "有谱么自动翻谱"
+  },
+  "icons": {
+    "16": "yz.png",
+    "32": "yz.png",
+    "128": "yz.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://yopu.co/*", "https://www.yopu.co/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": false
     }
+  ]
 }
