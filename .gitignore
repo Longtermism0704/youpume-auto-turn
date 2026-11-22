@@ -9,3 +9,6 @@ dist/
 # 系统文件
 .DS_Store
 Thumbs.db
+ScreenShot_*.png
+make_screenshot.py
+screenshot-*.png
