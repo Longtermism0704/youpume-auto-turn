@@ -250,7 +250,7 @@
   function setParams(p) {
     if (p && typeof p.pxPerSecond === 'number' && p.pxPerSecond > 0) {
       state.pxPerSecond = p.pxPerSecond;
-      try { localStorage.setItem('ys_pxPerSecond', String(state.pxPerSecond)); } catch (e) {}
+      persistSpeed(state.pxPerSecond);
     }
     return { ok: true, pxPerSecond: state.pxPerSecond, info: containerInfo() };
   }
@@ -265,29 +265,59 @@
     };
   }
 
-  // 尝试恢复上次速度
+  // 统一用 chrome.storage.local 持久化速度
+  function persistSpeed(pps) {
+    try {
+      if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ ys_pxPerSecond: pps });
+      }
+    } catch (e) {}
+  }
+
+  // 尝试恢复上次速度（chrome.storage.local，兼容旧版 localStorage 值）
   try {
-    const saved = parseFloat(localStorage.getItem('ys_pxPerSecond') || '');
-    if (!isNaN(saved) && saved > 0) state.pxPerSecond = saved;
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.get(['ys_pxPerSecond'], function (o) {
+        const saved = parseFloat(o && o.ys_pxPerSecond);
+        if (!isNaN(saved) && saved > 0) state.pxPerSecond = saved;
+      });
+    } else {
+      const saved = parseFloat(localStorage.getItem('ys_pxPerSecond') || '');
+      if (!isNaN(saved) && saved > 0) state.pxPerSecond = saved;
+    }
   } catch (e) {}
 
   // ---------- 状态广播（供 popup 实时刷新进度）----------
   function broadcastState() {
-    // 轻量：通过 storage / runtime 消息均可；这里用 runtime 广播给可能的 popup
+    // 轻量：通过 runtime 消息通知可能的 popup 刷新进度
     try {
-      chrome.runtime.sendMessage({ type: 'ys_state_update', state: getState() }).catch(() => {});
+      if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.sendMessage) return;
+      const ret = chrome.runtime.sendMessage({ type: 'ys_state_update', state: getState() });
+      // 新版 Chrome 返回 Promise、旧版返回 undefined；仅在支持时挂 catch，避免报错
+      if (ret && typeof ret.catch === 'function') ret.catch(() => {});
     } catch (e) {}
   }
 
-  // 定期（滚动时）推送进度
-  setInterval(() => {
+  // 扩展是否仍存活（卸载/重载后 chrome.runtime.id 会变为 undefined），用于自停幽灵轮询
+  function extensionAlive() {
+    try {
+      return typeof chrome !== 'undefined' && !!chrome.runtime && !!chrome.runtime.id;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // 定期（滚动时）推送进度；扩展已卸载则自动停止
+  const progressTimer = setInterval(() => {
+    if (!extensionAlive()) { clearInterval(progressTimer); return; }
     if (state.playing) broadcastState();
   }, 500);
 
-  // SPA 切换曲谱时（URL 变化）重置容器与滚动状态，避免沿用上一首的容器
+  // SPA 切换曲谱时（URL 变化）重置容器与滚动状态，避免沿用上一首的容器；扩展已卸载则自动停止
   (function watchRouteChange() {
     let lastUrl = location.href;
-    setInterval(() => {
+    const routeTimer = setInterval(() => {
+      if (!extensionAlive()) { clearInterval(routeTimer); return; }
       if (location.href !== lastUrl) {
         lastUrl = location.href;
         state.container = null;

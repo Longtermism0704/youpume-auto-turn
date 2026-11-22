@@ -1,19 +1,25 @@
 {
   "manifest_version": 3,
   "name": "有谱么自动翻谱（Auto Scroll）",
-  "version": "2.2.0",
-  "description": "在 yopu.co 曲谱页自动向下翻谱滚动，支持调速、暂停/继续，以整首用时为标尺。",
+  "version": "2.3.0",
+  "description": "在 yopu.co 曲谱页自动向下翻谱滚动，支持调速、暂停/继续，以整首用时为标尺。纯本地运行，不收集任何数据。",
+  "minimum_chrome_version": "88",
   "permissions": ["storage", "scripting", "activeTab"],
   "host_permissions": ["https://yopu.co/*", "https://www.yopu.co/*"],
   "action": {
-    "default_icon": "yz.png",
+    "default_icon": {
+      "16": "icon16.png",
+      "32": "icon32.png",
+      "128": "icon128.png"
+    },
     "default_popup": "popup.html",
     "default_title": "有谱么自动翻谱"
   },
   "icons": {
-    "16": "yz.png",
-    "32": "yz.png",
-    "128": "yz.png"
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   },
   "content_scripts": [
     {
